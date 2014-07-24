@@ -6,18 +6,19 @@ public class Mp3Info implements Serializable {
 
 	private static final long serialVersionUID = 6737380669853664271L;
 
-	private String id;
+	private String mp3Id;
 	
 	private String mp3Name;
 	
 	private String mp3Size;
 
-	public String getId() {
-		return id;
+
+	public String getMp3Id() {
+		return mp3Id;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public void setMp3Id(String mp3Id) {
+		this.mp3Id = mp3Id;
 	}
 
 	public String getMp3Name() {
@@ -36,5 +37,11 @@ public class Mp3Info implements Serializable {
 		this.mp3Size = mp3Size;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return new StringBuilder().append(this.getMp3Id()).append(";")
+				.append(this.getMp3Name()).append(";")
+				.append(this.getMp3Size()).append(";")
+				.toString();
+	}
 }

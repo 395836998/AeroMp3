@@ -7,17 +7,18 @@
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="19" />
-    
+
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
+        android:name="cn.zhanglian2010.mp3.ctx.Mp3Application"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="cn.zhanglian2010.mp3.MainActivity"
+            android:name="cn.zhanglian2010.mp3.Mp3ListActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,14 +26,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name="cn.zhanglian2010.mp3.service.PlayService" >
+        </service>
+
         <activity
-            android:name="cn.zhanglian2010.mp3.DownloadActivity"
-            android:label="@string/title_activity_download" >
+            android:name="cn.zhanglian2010.mp3.Mp3SingleActivity"
+            android:label="@string/title_activity_mp3_single" >
         </activity>
-        
-        <service android:name=".service.DownloadService"></service>
-		<service android:name=".service.PlayService"></service>
-		
     </application>
 
 </manifest>

@@ -1,0 +1,53 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:background="#dddddd"
+    android:orientation="vertical"
+    tools:context=".Mp3SingleActivity" >
+
+    <TextView
+        android:id="@+id/mp3TitleId"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="@string/hello_world" />
+    
+    <LinearLayout
+        android:id="@+id/toolbarId"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        >
+        
+        <ImageButton 
+            android:id="@+id/prevId"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_media_previous"
+            android:contentDescription="上一首"
+            />
+        
+        <ImageButton 
+            android:id="@+id/playPauseId"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_media_play"
+            android:contentDescription="播放"
+            />
+        
+        <ImageButton 
+            android:id="@+id/nextId"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_media_next"
+            android:contentDescription="下一首"
+            />
+        
+    </LinearLayout>
+
+</LinearLayout>

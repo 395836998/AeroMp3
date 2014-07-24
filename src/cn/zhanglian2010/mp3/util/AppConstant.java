@@ -1,13 +1,25 @@
 package cn.zhanglian2010.mp3.util;
 
+import java.io.File;
+
 public interface AppConstant {
-	public class PlayerMsg{
-		public static final int PLAY_MSG = 1;
-		public static final int PAUSE_MSG = 2;
-		public static final int STOP_MSG = 3;
+	
+	public class ActionMsg {
+		public static final int MSG_PREV = 10;
+		public static final int MSG_PLAY = 20;
+		public static final int MSG_PAUSE = 30;
+		public static final int MSG_STOP = 40;
+		public static final int MSG_NEXT = 50;
 	}
-	public class URL{
-		public static final String BASE_URL = "http://192.168.1.104:8080/mp3/";
+	
+	public class Params {
+		public static final String PARAM_MP3_INDEX = "MP3_INDEX";
+		public static final String PARAM_MP3_INFO = "MP3_INFO";
+		public static final String PARAM_ACTION_MSG = "ACTION_MSG";
+		public static final String PARAM_SERVICE_STOP = "cn.zhanglian2010.mp3.util.SERVICE_STOP";
 	}
-	public static final String LRC_MESSAGE_ACTION="mars.mp3player.lrcmessage.action";
+	
+	public class Path {
+		public static final String BASE_PATH = "mp3" + File.separator;
+	}
 }

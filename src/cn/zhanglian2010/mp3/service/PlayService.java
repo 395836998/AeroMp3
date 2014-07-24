@@ -1,83 +1,126 @@
 package cn.zhanglian2010.mp3.service;
 
 import java.io.File;
+import java.io.IOException;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.Environment;
 import android.os.IBinder;
 import cn.zhanglian2010.mp3.model.Mp3Info;
 import cn.zhanglian2010.mp3.util.AppConstant;
+import cn.zhanglian2010.mp3.util.FileUtils;
 
 public class PlayService extends Service {
 
 	private MediaPlayer player = null;
 	private Mp3Info info = null;
-	
-	private boolean hasPlayer = false;
-	private boolean isPlaying = false;
+	private StopServiceBroadcastReceiver stopReceiver;
 	
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
+	
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		//初始化媒体播放器
+		player = new MediaPlayer();
+		
+		stopReceiver = new StopServiceBroadcastReceiver();
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(AppConstant.Params.PARAM_SERVICE_STOP);
+		this.registerReceiver(stopReceiver, filter);
+	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		
-		Mp3Info info1 = (Mp3Info)intent.getSerializableExtra("info");
-		int MSG = intent.getIntExtra("MSG", 0);
-		System.out.println(MSG);
+		Mp3Info info1 = (Mp3Info) intent.getSerializableExtra(AppConstant.Params.PARAM_MP3_INFO);
+		int actionMsg = intent.getIntExtra(AppConstant.Params.PARAM_ACTION_MSG, 0);
 		
-		if(MSG == AppConstant.PlayerMsg.PLAY_MSG){
-			if(isPlaying){
-				if(info1.getMp3Name().equals(info.getMp3Name())){
-					pause();
-				}else{
-					stop();
-					play(info1);
-				}
-			}else{
+		switch (actionMsg) {
+			case AppConstant.ActionMsg.MSG_PLAY:
 				play(info1);
-			}
+				break;
+			case AppConstant.ActionMsg.MSG_PAUSE:
+				pause();
+				break;
+			case AppConstant.ActionMsg.MSG_STOP:
+				stop();
+				break;
+			default:
+				stop();
+				break;
 		}
-		return super.onStartCommand(intent, flags, startId);
+		return START_NOT_STICKY;
 	}
 	
-	private void play(Mp3Info info){
-		this.info = info;
-		if(!hasPlayer){
-			String path = getMp3Path(info);
-			System.out.println(path);
-			player = MediaPlayer.create(this, Uri.parse("file://"+path) );
-			player.setLooping(false);
-			player.start();
-			hasPlayer = true;
-		}else{
+	private void play(Mp3Info info1){
+
+		if(this.info == null || !this.info.getMp3Name().equals(info1.getMp3Name())){
+			//第一次播放 或者 换播不同的歌
+			this.info = info1;
+			String path = getMp3Path(this.info);
+			try {
+				//重置MediaPlayer
+				player.reset();
+				//设置要播放的文件的路径
+				player.setDataSource(path);
+				//准备播放
+				player.prepare();
+				//不循环
+				player.setLooping(false);
+				//开始播放
+				player.start();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}else if(!player.isPlaying()){
 			player.start();
 		}
-		isPlaying = true;
 	}
 	
 	private void pause(){
 		player.pause();
-		isPlaying = false;
 	}
 	
 	private void stop(){
 		player.stop();
 		player.release();
-		hasPlayer = false;
-		isPlaying = false;
+		this.info = null;
+	}
+	
+	@Override
+	public void onDestroy() {
+		player.release();
+
+		if (stopReceiver != null) {
+			this.unregisterReceiver(stopReceiver);
+			stopReceiver = null;
+		}
+		super.onDestroy();
+		System.out.println("destroy...");
 	}
 	
 	private String getMp3Path(Mp3Info mp3Info) {
-		String SDCardRoot=Environment.getExternalStorageDirectory().getAbsolutePath();
-		String path=SDCardRoot+File.separator+"mp3"+File.separator+mp3Info.getMp3Name();
+		String path = FileUtils.SD_ROOT + AppConstant.Path.BASE_PATH + File.separator + mp3Info.getMp3Name();
 		return path;
 	}
 	
 	
+	private class StopServiceBroadcastReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			System.out.println("stopping...");
+			PlayService.this.stopSelf();
+//			PlayService.this.onDestroy();
+		}
+		
+	}
 }

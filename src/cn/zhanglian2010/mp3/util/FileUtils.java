@@ -5,65 +5,54 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import android.os.Environment;
-import cn.zhanglian2010.mp3.model.Mp3Info;
 
 public class FileUtils {
-	private String SDCardRoot;
-
-	public FileUtils() {
-		// µÃµ½µ±Ç°Íâ²¿´æ´¢Éè±¸µÄÄ¿Â¼
-		SDCardRoot = Environment.getExternalStorageDirectory()
-				.getAbsolutePath()
-				+ File.separator;
-	}
+	
+	public static final String SD_ROOT = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;;
 
 	/**
-	 * ÔÚSD¿¨ÉÏ´´½¨ÎÄ¼ş
+	 * åœ¨SDå¡æŒ‡å®šç›®å½•ä¸­æ–°å»ºæ–‡ä»¶
 	 * 
 	 * @throws IOException
 	 */
-	public File createFileInSDCard(String fileName, String dir)
+	public static File createFileInSDCard(String fileName, String dir)
 			throws IOException {
-		File file = new File(SDCardRoot + dir + File.separator + fileName);
-		System.out.println("file---->" + file);
+		File file = new File(SD_ROOT + dir + File.separator + fileName);
 		file.createNewFile();
 		return file;
 	}
 
 	/**
-	 * ÔÚSD¿¨ÉÏ´´½¨Ä¿Â¼
+	 * åœ¨SDå¡ä¸­åˆ›å»ºæ–‡ä»¶å¤¹
 	 * 
 	 * @param dirName
 	 */
-	public File creatSDDir(String dir) {
-		File dirFile = new File(SDCardRoot + dir + File.separator);
-		System.out.println(dirFile.mkdirs());
+	public static File createSDDir(String dir) {
+		File dirFile = new File(SD_ROOT + dir + File.separator);
+		dirFile.mkdirs();
 		return dirFile;
 	}
 
 	/**
-	 * ÅĞ¶ÏSD¿¨ÉÏµÄÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
+	 * æ–‡ä»¶åœ¨SDå¡æŒ‡å®šç›®å½•ä¸­æ˜¯å¦å­˜åœ¨
 	 */
-	public boolean isFileExist(String fileName, String path) {
-		File file = new File(SDCardRoot + path + File.separator + fileName);
+	public static boolean isFileExist(String fileName, String path) {
+		File file = new File(SD_ROOT + path + File.separator + fileName);
 		return file.exists();
 	}
 
 	/**
-	 * ½«Ò»¸öInputStreamÀïÃæµÄÊı¾İĞ´Èëµ½SD¿¨ÖĞ
+	 * å°†æŒ‡å®šè¾“å…¥æµå†™åˆ°æŒ‡å®šè·¯å¾„çš„æ–‡ä»¶ä¸­
 	 */
-	public File write2SDFromInput(String path, String fileName,
+	public static File write2SDFromInput(String path, String fileName,
 			InputStream input) {
 
 		File file = null;
 		OutputStream output = null;
 		try {
-			creatSDDir(path);
+			createSDDir(path);
 			file = createFileInSDCard(fileName, path);
 			output = new FileOutputStream(file);
 			byte buffer[] = new byte[4 * 1024];
@@ -82,29 +71,6 @@ public class FileUtils {
 			}
 		}
 		return file;
-	}
-
-	/**
-	 * ¶ÁÈ¡Ä¿Â¼ÖĞµÄMp3ÎÄ¼şµÄÃû×ÖºÍ´óĞ¡
-	 */
-	public List<Mp3Info> getMp3Files(String path) {
-		List<Mp3Info> mp3Infos = new ArrayList<Mp3Info>();
-		File file = new File(SDCardRoot + File.separator + path);
-		File[] files = file.listFiles();
-		
-		if(files == null){
-			return Collections.emptyList();
-		}
-		
-		for (int i = 0; i < files.length; i++) {
-			if (files[i].getName().endsWith("mp3")) {
-				Mp3Info mp3Info = new Mp3Info();
-				mp3Info.setMp3Name(files[i].getName());
-				mp3Info.setMp3Size(files[i].length() + "");
-				mp3Infos.add(mp3Info);
-			}
-		}
-		return mp3Infos;
 	}
 
 }
