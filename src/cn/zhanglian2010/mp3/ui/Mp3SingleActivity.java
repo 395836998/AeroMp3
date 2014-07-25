@@ -1,6 +1,4 @@
-package cn.zhanglian2010.mp3;
-
-import java.util.List;
+package cn.zhanglian2010.mp3.ui;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -9,11 +7,13 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
-import cn.zhanglian2010.mp3.ctx.Mp3Application;
+import cn.zhanglian2010.mp3.AppConstant;
+import cn.zhanglian2010.mp3.Mp3Application;
+import cn.zhanglian2010.mp3.core.PlayEngineListener;
 import cn.zhanglian2010.mp3.model.Mp3Info;
 import cn.zhanglian2010.mp3.service.PlayService;
-import cn.zhanglian2010.mp3.util.AppConstant;
 
 public class Mp3SingleActivity extends Activity {
 	
@@ -22,16 +22,14 @@ public class Mp3SingleActivity extends Activity {
 	private ImageButton nextButton;
 	
 	private TextView titleView;
+	private SeekBar progressBar;
 	
-	private List<Mp3Info> mp3List;
-	
-	private int index;
 	private int playStatus = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		
-		System.out.println("oncreate...");
+		System.out.println("create...");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_mp3_single);
 		
@@ -65,31 +63,32 @@ public class Mp3SingleActivity extends Activity {
 			}
 		});
 		
-		Mp3Application app = (Mp3Application) getApplication();
-		mp3List = app.getMp3List();
+		Mp3Application.getInstance().setPlayEngineListener(playEngineListener);
+		Intent intent = new Intent();
+		intent.putExtra(AppConstant.Params.PARAM_ACTION_MSG, AppConstant.ActionMsg.MSG_BIND_LISTENER);
+		intent.setClass(this, PlayService.class);
+		startService(intent);
 		
-		Intent actIntent = getIntent();
-		index = actIntent.getIntExtra(AppConstant.Params.PARAM_MP3_INDEX, 0);
+		titleView = (TextView) findViewById(R.id.mp3InfoId);
+		titleView.setText(Mp3Application.getInstance().getPlayList().currName());
 		
-		titleView = (TextView) findViewById(R.id.mp3TitleId);
-		titleView.setText(mp3List.get(index).getMp3Name());
+		progressBar = (SeekBar) findViewById(R.id.mp3ProgressId);
+		progressBar.setOnSeekBarChangeListener(new ProgressChangeListener());
 		
 		play();
 	}
 	
-
 	private void play() {
 		sendServiceMsg(AppConstant.ActionMsg.MSG_PLAY);
 		playButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_media_pause));
 		playStatus = 1;
+		
 	}
 	
 	private void sendServiceMsg(int msgType){
 		Intent intent = new Intent();
-		intent.putExtra(AppConstant.Params.PARAM_MP3_INFO, mp3List.get(index));
 		intent.putExtra(AppConstant.Params.PARAM_ACTION_MSG, msgType);
 		intent.setClass(this, PlayService.class);
-		
 		startService(intent);
 	}
 	
@@ -100,20 +99,68 @@ public class Mp3SingleActivity extends Activity {
 	}
 	
 	private void prev() {
-		if(index > 0){
-			index--;
-		}
-		titleView.setText(mp3List.get(index).getMp3Name());
-		play();
+		sendServiceMsg(AppConstant.ActionMsg.MSG_PREV);
 	}
 	
 	private void next() {
-		if(index < mp3List.size()-1){
-			index++;
-		}
-		titleView.setText(mp3List.get(index).getMp3Name());
-		play();
+		sendServiceMsg(AppConstant.ActionMsg.MSG_NEXT);
 	}
+	
+	
+	private class ProgressChangeListener implements SeekBar.OnSeekBarChangeListener {
+
+		@Override
+		public void onProgressChanged(SeekBar seekBar, int progress,
+				boolean fromUser) {
+			
+		}
+
+		@Override
+		public void onStartTrackingTouch(SeekBar seekBar) {
+			
+		}
+
+		@Override
+		public void onStopTrackingTouch(SeekBar seekBar) {
+			Intent intent = new Intent();
+			intent.putExtra(AppConstant.Params.PARAM_ACTION_MSG, AppConstant.ActionMsg.MSG_PROGRESS_JUMP);
+			intent.putExtra(AppConstant.Params.PARAM_MP3_PROGRESS, progressBar.getProgress());
+			intent.setClass(Mp3SingleActivity.this, PlayService.class);
+			
+			startService(intent);
+		}
+		
+	}
+	
+	private PlayEngineListener playEngineListener = new PlayEngineListener(){
+
+		@Override
+		public void onStart(int millstime) {
+			progressBar.setMax(millstime / 1000);
+		}
+
+		@Override
+		public void onPause() {
+			
+		}
+
+		@Override
+		public void onStop() {
+			
+		}
+
+		@Override
+		public void onMp3Changed(Mp3Info info) {
+			titleView.setText( info.getMp3Name() );
+			progressBar.setProgress(0);
+		}
+
+		@Override
+		public void onProgressChanged(int progress) {
+			progressBar.setProgress(progress);
+		}
+		
+	};
 	
 
 	@Override

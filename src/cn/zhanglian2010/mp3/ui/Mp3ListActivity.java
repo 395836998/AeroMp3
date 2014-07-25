@@ -1,4 +1,4 @@
-package cn.zhanglian2010.mp3;
+package cn.zhanglian2010.mp3.ui;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -12,15 +12,17 @@ import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import cn.zhanglian2010.mp3.ctx.Mp3Application;
+import android.widget.Toast;
+import cn.zhanglian2010.mp3.AppConstant;
+import cn.zhanglian2010.mp3.Mp3Application;
 import cn.zhanglian2010.mp3.model.Mp3Info;
-import cn.zhanglian2010.mp3.util.AppConstant;
+import cn.zhanglian2010.mp3.model.Mp3PlayList;
+import cn.zhanglian2010.mp3.service.PlayService;
 import cn.zhanglian2010.mp3.util.FileUtils;
 
 public class Mp3ListActivity extends ListActivity {
@@ -56,17 +58,19 @@ public class Mp3ListActivity extends ListActivity {
 		}
 
 		List<Mp3Info> mp3Infos = new ArrayList<Mp3Info>();
+		int id = 1;
 		for (File file : files) {
 			Mp3Info mp3Info = new Mp3Info();
+			mp3Info.setMp3Id(id++ + "");
 			mp3Info.setMp3Name(file.getName());
 			mp3Info.setMp3Size(file.length() + "");
 			mp3Infos.add(mp3Info);
 		}
 		mp3List = mp3Infos;
 
-		Mp3Application app = (Mp3Application) getApplication();
-		app.setMp3List(mp3List);
-
+		Mp3PlayList playList = new Mp3PlayList(mp3List);
+		Mp3Application.getInstance().setPlayList(playList);
+		
 	}
 
 	private void fillListData() {
@@ -87,31 +91,29 @@ public class Mp3ListActivity extends ListActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		return super.onCreateOptionsMenu(menu);
+		menu.add(Menu.NONE, Menu.FIRST + 1, 1, "关于").setIcon(android.R.drawable.ic_dialog_info); 
+        menu.add(Menu.NONE, Menu.FIRST + 2, 2,"退出").setIcon(android.R.drawable.ic_lock_power_off);
+        return true; 
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		return super.onOptionsItemSelected(item);
+		if(item.getItemId() == Menu.FIRST + 1){ 
+			Toast.makeText(this, "关于ZeroMp3", Toast.LENGTH_LONG).show();
+        }if(item.getItemId() == Menu.FIRST + 2){ 
+        	showTips();
+        }else{ 
+            return super.onOptionsItemSelected(item); 
+        } 
+        return true; 
 	}
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-
+		Mp3Application.getInstance().getPlayList().move(position);
 		Intent intent = new Intent();
-		intent.putExtra(AppConstant.Params.PARAM_MP3_INDEX, position);
 		intent.setClass(this, Mp3SingleActivity.class);
-
 		startActivity(intent);
-	}
-
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-			showTips();
-			return false;
-		}
-		return super.onKeyDown(keyCode, event);
 	}
 
 	private void showTips() {
@@ -121,8 +123,11 @@ public class Mp3ListActivity extends ListActivity {
 				.setPositiveButton("确定", new DialogInterface.OnClickListener() {
 
 					public void onClick(DialogInterface dialog, int which) {
-						Intent intent = new Intent(AppConstant.Params.PARAM_SERVICE_STOP);
-						sendBroadcast(intent);
+						Intent intent = new Intent();
+						intent.setAction(PlayService.STOP_RECEIVED);
+						sendBroadcast(intent);  
+						
+						System.out.println("sadasdasd");
 						
 						Mp3ListActivity.this.finish();
 					}
